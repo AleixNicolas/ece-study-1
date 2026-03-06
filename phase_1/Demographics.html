@@ -1,0 +1,20 @@
+{{ block title }}General Information{{ endblock }}
+{{ block content }}
+    
+    {{ formfield 'age_range' }}
+    {{ formfield 'gender' }}
+    {{ formfield 'education' }}
+    
+    <div class="mb-3 p-3 bg-light border rounded">
+        {{ formfield 'imc_question' }}
+    </div>
+    
+    {{ formfield 'political_party' }}
+
+    <div style="opacity: 0.01; height: 1px; overflow: hidden; pointer-events: none;" aria-hidden="true">
+        <label for="id_user_reference_code">Please leave this field empty.</label>
+        {{ formfield 'user_reference_code' label="" }}
+    </div>
+
+    {{ next_button }}
+{{ endblock }}
