@@ -26,20 +26,26 @@
 <input type="hidden" name="rt_final_4" id="rt_final_4">
 
 <div class="row">
-    <div class="col-md-6" style="max-height: 80vh; overflow-y: auto; padding-bottom: 20px;">
+    <div class="col-md-6 order-2 order-md-1" style="max-height: 80vh; overflow-y: auto; padding-bottom: 20px;">
         <p class="text-muted">Review the news articles below. Read the story before sharing.</p>
         
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_1')">
-            <h6 class="mb-2" style="color: #333;">{{ item_1_headline }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <div onclick="checkFocusAndLog('decide_1')">
-                    {{ formfield 'decision_1' label="" }}
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(1)">
-                    Read Story
-                </button>
             </div>
         </div>
+
+    <div class="col-md-6 order-1 order-md-2 mb-3">
+        <div id="reading-pane" class="card shadow-sm p-4 sticky-top" style="top: 10px; min-height: 250px; max-height: 45vh; overflow-y: auto;">
+            <h5 id="display-headline" class="text-muted">Select an article.</h5>
+            <p id="display-body"></p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 mb-5">
+    <div class="col-12 text-center">
+        <button class="otree-btn-next btn btn-success btn-lg" onclick="finalizeTelemetry()">Complete</button>
+    </div>
+</div>
 
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_2')">
             <h6 class="mb-2" style="color: #333;">{{ item_2_headline }}</h6>
