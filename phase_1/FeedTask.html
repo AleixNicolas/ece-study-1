@@ -7,6 +7,7 @@
 <input type="hidden" name="window_width" id="window_width">
 <input type="hidden" name="window_height" id="window_height">
 <input type="hidden" name="dirty_click_count" id="dirty_click_count" value="0">
+
 <input type="hidden" name="average_feed_size" id="average_feed_size">
 <input type="hidden" name="max_feed_size" id="max_feed_size" value="4">
 <input type="hidden" name="average_pending_items" id="average_pending_items">
@@ -26,26 +27,28 @@
 <input type="hidden" name="rt_final_4" id="rt_final_4">
 
 <div class="row">
-    <div class="col-md-6 order-2 order-md-1" style="max-height: 80vh; overflow-y: auto; padding-bottom: 20px;">
-        <p class="text-muted">Review the news articles below. Read the story before sharing.</p>
-        
-        <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_1')">
-            </div>
-        </div>
-
+    
     <div class="col-md-6 order-1 order-md-2 mb-3">
         <div id="reading-pane" class="card shadow-sm p-4 sticky-top" style="top: 10px; min-height: 250px; max-height: 45vh; overflow-y: auto;">
             <h5 id="display-headline" class="text-muted">Select an article.</h5>
             <p id="display-body"></p>
         </div>
     </div>
-</div>
 
-<div class="row mt-4 mb-5">
-    <div class="col-12 text-center">
-        <button class="otree-btn-next btn btn-success btn-lg" onclick="finalizeTelemetry()">Complete</button>
-    </div>
-</div>
+    <div class="col-md-6 order-2 order-md-1" style="max-height: 80vh; overflow-y: auto; padding-bottom: 20px;">
+        <p class="text-muted">Review the news articles below. Read the story before sharing.</p>
+        
+        <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_1')">
+            <h6 class="mb-2" style="color: #333;">{{ item_1_headline }}</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <div onclick="checkFocusAndLog('decide_1')">
+                    {{ formfield 'decision_1' label="" }}
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(1)">
+                    Read Story
+                </button>
+            </div>
+        </div>
 
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_2')">
             <h6 class="mb-2" style="color: #333;">{{ item_2_headline }}</h6>
@@ -82,30 +85,24 @@
                 </button>
             </div>
         </div>
-
-        <div class="mt-4"><button class="otree-btn-next btn btn-success" onclick="finalizeTelemetry()">Complete</button></div>
     </div>
+</div>
 
-    <div class="col-md-6">
-        <div id="reading-pane" class="card shadow-sm p-4 sticky-top" style="top: 20px; min-height: 400px;">
-            <h5 id="display-headline" class="text-muted">Select an article.</h5>
-            <p id="display-body"></p>
-        </div>
+<div class="row mt-4 mb-5">
+    <div class="col-12 text-center">
+        <button type="button" class="btn btn-success btn-lg" onclick="finalizeTelemetry()">Complete</button>
     </div>
 </div>
 
 <script>
     let events = []; let start = Date.now(); let isFocused = true;
     let pendingSamples = []; let itemReadOnset = {1:null, 2:null, 3:null, 4:null};
-    
-    // Mouse Tracking Variables
     let mousePathBuffer = [];
     let savedTrajectories = [];
 
     document.getElementById('window_width').value = window.innerWidth;
     document.getElementById('window_height').value = window.innerHeight;
 
-    // Visibility API Implementation
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             isFocused = false; 
@@ -118,7 +115,6 @@
         }
     });
     
-    // Track mouse coordinates (capped buffer to prevent massive payloads)
     document.addEventListener('mousemove', (e) => {
         if (mousePathBuffer.length > 40) mousePathBuffer.shift(); 
         mousePathBuffer.push({x: e.clientX, y: e.clientY, t: Date.now() - start});
@@ -131,7 +127,6 @@
         let onset = itemReadOnset[i] || start;
         let rt = Date.now() - onset;
         
-        // Save the mouse path leading up to this exact click
         savedTrajectories.push({action: action, path: [...mousePathBuffer]});
 
         if (!document.getElementById('rt_first_'+i).value) document.getElementById('rt_first_'+i).value = rt;
@@ -140,11 +135,13 @@
     }
 
     function showArticle(i) {
-        // Save the mouse path leading up to the "Read Story" click
         savedTrajectories.push({action: 'read_'+i, path: [...mousePathBuffer]});
         logAction('read_'+i);
 
-        if (itemReadOnset[i] === null) { itemReadOnset[i] = Date.now(); document.getElementById('read_time_'+i).value = itemReadOnset[i] - start; }
+        if (itemReadOnset[i] === null) { 
+            itemReadOnset[i] = Date.now(); 
+            document.getElementById('read_time_'+i).value = itemReadOnset[i] - start; 
+        }
         
         document.getElementById('display-headline').innerText = js_vars['item_'+i+'_headline'];
         document.getElementById('display-body').innerText = js_vars['item_'+i+'_body'];
@@ -152,13 +149,15 @@
 
     setInterval(() => {
         let count = 0;
-        for(let i=1; i<=4; i++) { if (!Array.from(document.querySelectorAll(`input[name="decision_${i}"]`)).some(r => r.checked)) count++; }
+        for(let i=1; i<=4; i++) { 
+            if (!Array.from(document.querySelectorAll(`input[name="decision_${i}"]`)).some(r => r.checked)) count++; 
+        }
         pendingSamples.push(count);
         events.push({a: 'm', b: count, t: Date.now() - start});
     }, 500);
 
     function finalizeTelemetry() {
-        // DYNAMIC METRIC CALCULATION
+        // Calculate Feed Metrics
         let totalFeedItems = document.querySelectorAll('.news-item').length;
         document.getElementById('max_feed_size').value = totalFeedItems;
         document.getElementById('average_feed_size').value = totalFeedItems.toFixed(2);
@@ -172,9 +171,10 @@
         // Standard Telemetry
         document.getElementById('click_log').value = JSON.stringify(events);
         document.getElementById('total_time_on_feed').value = (Date.now() - start) / 1000;
-        
-        // Save Mouse Tracking JSON
         document.getElementById('mouse_trajectory_log').value = JSON.stringify(savedTrajectories);
+
+        // Submit the form
+        document.getElementById('form').submit();
     }
 </script>
 {{ endblock }}
