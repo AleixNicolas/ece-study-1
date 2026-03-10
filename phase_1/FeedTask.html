@@ -1,4 +1,5 @@
 {{ block title }}News Feed Activity{{ endblock }}
+
 {{ block content }}
 
 <input type="hidden" name="click_log" id="click_log">
@@ -26,25 +27,59 @@
 <input type="hidden" name="rt_final_3" id="rt_final_3">
 <input type="hidden" name="rt_final_4" id="rt_final_4">
 
+<style>
+    /* Force Likert to stay on one line on mobile */
+    .likert-mobile-fix .controls {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        padding-bottom: 5px; /* Space for scrollbar if triggered */
+    }
+    .likert-mobile-fix .form-check {
+        margin-right: 10px;
+        white-space: nowrap;
+    }
+    .likert-mobile-fix label {
+        font-size: 0.85rem;
+    }
+    
+    /* Hide the mobile accordion text by default */
+    .mobile-article-body {
+        display: none;
+        background-color: #fff;
+        border-left: 3px solid #0d6efd;
+    }
+    .mobile-article-body.show {
+        display: block;
+    }
+</style>
+
 <div class="row">
     
-    <div class="col-md-6 order-1 order-md-2 mb-3">
+    <div class="col-md-6 order-1 order-md-2 mb-3 d-none d-md-block">
         <div id="reading-pane" class="card shadow-sm p-4 sticky-top" style="top: 10px; min-height: 250px; max-height: 45vh; overflow-y: auto;">
-            <h5 id="display-headline" class="text-muted">Select an article.</h5>
+            <h5 id="display-headline" class="text-muted">Select an article from the list below.</h5>
             <p id="display-body"></p>
         </div>
     </div>
 
     <div class="col-md-6 order-2 order-md-1" style="max-height: 80vh; overflow-y: auto; padding-bottom: 20px;">
-        <p class="text-muted">Review the news articles below. Read the story before sharing.</p>
+        <p class="text-muted d-block d-md-none">Review the news articles below. Tap "Read Story" to expand.</p>
+        <p class="text-muted d-none d-md-block">Review the news articles below. Read the story before sharing.</p>
         
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_1')">
             <h6 class="mb-2" style="color: #333;">{{ item_1_headline }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <div onclick="checkFocusAndLog('decide_1')">
+            
+            <div id="mobile_body_1" class="mobile-article-body p-2 mb-3 mt-2 text-muted d-md-none" style="font-size: 0.9rem;">
+                {{ item_1_body }}
+            </div>
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="likert-mobile-fix w-100 mb-2 mb-md-0" onclick="checkFocusAndLog('decide_1')">
                     {{ formfield 'decision_1' label="" }}
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(1)">
+                <button type="button" class="btn btn-sm btn-outline-primary ms-md-2 flex-shrink-0" onclick="showArticle(1)">
                     Read Story
                 </button>
             </div>
@@ -52,11 +87,14 @@
 
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_2')">
             <h6 class="mb-2" style="color: #333;">{{ item_2_headline }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <div onclick="checkFocusAndLog('decide_2')">
+            <div id="mobile_body_2" class="mobile-article-body p-2 mb-3 mt-2 text-muted d-md-none" style="font-size: 0.9rem;">
+                {{ item_2_body }}
+            </div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="likert-mobile-fix w-100 mb-2 mb-md-0" onclick="checkFocusAndLog('decide_2')">
                     {{ formfield 'decision_2' label="" }}
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(2)">
+                <button type="button" class="btn btn-sm btn-outline-primary ms-md-2 flex-shrink-0" onclick="showArticle(2)">
                     Read Story
                 </button>
             </div>
@@ -64,11 +102,14 @@
 
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_3')">
             <h6 class="mb-2" style="color: #333;">{{ item_3_headline }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <div onclick="checkFocusAndLog('decide_3')">
+            <div id="mobile_body_3" class="mobile-article-body p-2 mb-3 mt-2 text-muted d-md-none" style="font-size: 0.9rem;">
+                {{ item_3_body }}
+            </div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="likert-mobile-fix w-100 mb-2 mb-md-0" onclick="checkFocusAndLog('decide_3')">
                     {{ formfield 'decision_3' label="" }}
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(3)">
+                <button type="button" class="btn btn-sm btn-outline-primary ms-md-2 flex-shrink-0" onclick="showArticle(3)">
                     Read Story
                 </button>
             </div>
@@ -76,15 +117,19 @@
 
         <div class="card bg-light mb-2 p-3 news-item" onmouseenter="logAction('hover_in_4')">
             <h6 class="mb-2" style="color: #333;">{{ item_4_headline }}</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <div onclick="checkFocusAndLog('decide_4')">
+            <div id="mobile_body_4" class="mobile-article-body p-2 mb-3 mt-2 text-muted d-md-none" style="font-size: 0.9rem;">
+                {{ item_4_body }}
+            </div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="likert-mobile-fix w-100 mb-2 mb-md-0" onclick="checkFocusAndLog('decide_4')">
                     {{ formfield 'decision_4' label="" }}
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showArticle(4)">
+                <button type="button" class="btn btn-sm btn-outline-primary ms-md-2 flex-shrink-0" onclick="showArticle(4)">
                     Read Story
                 </button>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -143,8 +188,23 @@
             document.getElementById('read_time_'+i).value = itemReadOnset[i] - start; 
         }
         
-        document.getElementById('display-headline').innerText = js_vars['item_'+i+'_headline'];
-        document.getElementById('display-body').innerText = js_vars['item_'+i+'_body'];
+        // 1. Desktop behavior: Update the fixed reading pane
+        if (window.innerWidth >= 768) {
+            document.getElementById('display-headline').innerText = js_vars['item_'+i+'_headline'];
+            document.getElementById('display-body').innerText = js_vars['item_'+i+'_body'];
+        } 
+        
+        // 2. Mobile behavior: Toggle Accordion
+        else {
+            let mobileContent = document.getElementById('mobile_body_'+i);
+            
+            if (mobileContent.classList.contains('show')) {
+                mobileContent.classList.remove('show');
+            } else {
+                document.querySelectorAll('.mobile-article-body').forEach(el => el.classList.remove('show'));
+                mobileContent.classList.add('show');
+            }
+        }
     }
 
     setInterval(() => {
@@ -157,7 +217,6 @@
     }, 500);
 
     function finalizeTelemetry() {
-        // Calculate Feed Metrics
         let totalFeedItems = document.querySelectorAll('.news-item').length;
         document.getElementById('max_feed_size').value = totalFeedItems;
         document.getElementById('average_feed_size').value = totalFeedItems.toFixed(2);
@@ -168,12 +227,10 @@
         let avgPending = pendingSamples.reduce((a, b) => a + b, 0) / (pendingSamples.length || 1);
         document.getElementById('average_pending_items').value = avgPending.toFixed(2);
 
-        // Standard Telemetry
         document.getElementById('click_log').value = JSON.stringify(events);
         document.getElementById('total_time_on_feed').value = (Date.now() - start) / 1000;
         document.getElementById('mouse_trajectory_log').value = JSON.stringify(savedTrajectories);
 
-        // Submit the form
         document.getElementById('form').submit();
     }
 </script>

@@ -29,7 +29,7 @@
 
     <p class="mb-4">Please indicate your response to the following items based on your current views.</p>
 
-    {% for q in questions_data %}
+    {{ for q in questions_data }}
         <div class="mb-4 shadow-sm p-4 border rounded bg-light">
             <p class="fw-bold mb-2 text-center" style="font-size: 1.05rem;">{{ q.text }}</p>
             
@@ -43,7 +43,7 @@
                 <div class="likert-anchor anchor-right">{{ q.right }}</div>
             </div>
         </div>
-    {% endfor %}
+    {{ endfor }}
 
     <div class="mt-5 border-top pt-4">
         <label for="id_opinion_summary" class="fw-bold mb-2">
@@ -65,7 +65,9 @@
     <input type="hidden" name="large_text_jumps" id="large_text_jumps" value="0">
     <input type="hidden" name="typing_while_unfocused" id="typing_while_unfocused" value="0">
 
-    {{ next_button }}
+    <div class="text-center mt-4 mb-5">
+        {{ next_button }}
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -125,7 +127,8 @@
                         document.getElementById('typing_active_time').value = activeTimeSec.toFixed(2);
                         
                         if (activeTimeSec > 0) {
-                            let cpm = (textarea.value.length / (activeTimeSec / 60));
+                            let mins = activeTimeSec / 60;
+                            let cpm = textarea.value.length / mins;
                             document.getElementById('typing_cpm').value = cpm.toFixed(2);
                         }
 
