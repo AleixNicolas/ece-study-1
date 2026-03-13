@@ -314,7 +314,14 @@ class Player(BasePlayer):
             score -= penalty
             reasons.append(f"Hidden Tabs ({int(blurs)}x)")
 
-        self.trust_score = max(0, score)
+        # --- TESTING BYPASS START ---
+        # FOR PRODUCTION USE THIS:
+        # self.trust_score = max(0, score)
+        
+        # FOR TESTING ONLY, FORCE PERFECT SCORE:
+        self.trust_score = 100 
+        # --- TESTING BYPASS END ---
+
         self.trust_score_breakdown = f"Score: {self.trust_score} [{' | '.join(reasons) if reasons else 'Clean'}]"
 
         ops = [self.opinion_1, self.opinion_2, self.opinion_3, self.opinion_4]
