@@ -23,8 +23,9 @@ SESSION_FIELDS = []
 # --- NEW ROOMS CONFIGURATION FOR TESTING ---
 ROOMS = [
     dict(
-        name='testing_room',
-        display_name='Automated Testing Room'
+        name='Room_1',
+        display_name='Room 1',
+        use_secure_urls=True
     ),
 ]
 
