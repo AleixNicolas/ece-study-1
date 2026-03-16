@@ -234,6 +234,8 @@ class Player(BasePlayer):
     decision_3 = models.StringField(choices=['Share', 'Not Share'], widget=widgets.RadioSelect)
     decision_4 = models.StringField(choices=['Share', 'Not Share'], widget=widgets.RadioSelect)
 
+    outgoing_shares = models.LongStringField(initial="[]", blank=True)
+
     read_time_1 = models.IntegerField(blank=True)
     read_time_2 = models.IntegerField(blank=True)
     read_time_3 = models.IntegerField(blank=True)
@@ -316,10 +318,10 @@ class Player(BasePlayer):
 
         # --- TESTING BYPASS START ---
         # FOR PRODUCTION USE THIS:
-        # self.trust_score = max(0, score)
+        self.trust_score = max(0, score)
         
         # FOR TESTING ONLY, FORCE PERFECT SCORE:
-        self.trust_score = 100 
+        # self.trust_score = 100 
         # --- TESTING BYPASS END ---
 
         self.trust_score_breakdown = f"Score: {self.trust_score} [{' | '.join(reasons) if reasons else 'Clean'}]"
@@ -390,6 +392,7 @@ class FeedTask(Page):
         'rt_first_1', 'rt_first_2', 'rt_first_3', 'rt_first_4',
         'rt_final_1', 'rt_final_2', 'rt_final_3', 'rt_final_4'
     ]
+    
     @staticmethod
     def is_displayed(player: Player):
         return player.field_maybe_none('consent_participate') == True
@@ -418,7 +421,19 @@ class FeedTask(Page):
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
+        # 1. Calculate the trust score
         player.calculate_trust_metrics()
+        
+        # 2. Compile the shared items into a JSON list for Phase 2
+        import json
+        shares = []
+        for i in range(1, 5):
+            decision = getattr(player, f'decision_{i}')
+            if decision == 'Share':
+                item_id = getattr(player, f'item_{i}_id')
+                shares.append(item_id)
+                
+        player.outgoing_shares = json.dumps(shares)
 
 class SuccessScreen(Page):
     @staticmethod
