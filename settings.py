@@ -24,8 +24,7 @@ SESSION_FIELDS = []
 ROOMS = [
     dict(
         name='Room_1',
-        display_name='Room 1',
-        use_secure_urls=True
+        display_name='Room 1'
     ),
 ]
 
