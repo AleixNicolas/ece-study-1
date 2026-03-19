@@ -1,4 +1,4 @@
-from otree.api import * 
+from otree.api import *
 import random 
 import csv 
 import os 
@@ -369,19 +369,26 @@ class FeedTask(Page):
         'rt_first_1', 'rt_first_2', 'rt_first_3', 'rt_first_4', 
         'rt_final_1', 'rt_final_2', 'rt_final_3', 'rt_final_4' 
     ] 
+    
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == True 
+        
     @staticmethod 
     def vars_for_template(player: Player): 
-        vars_dict = {} 
+        feed_items = []
         for i in range(1, 5): 
             item_id = getattr(player, f"item_{i}_id") 
             news_item = next((n for n in Constants.NEWS_ITEMS if n['id'] == item_id), None) 
             if news_item: 
-                vars_dict[f'item_{i}_headline'] = news_item['headline'] 
-                vars_dict[f'item_{i}_body'] = news_item['additional_text'] 
-        return vars_dict 
+                feed_items.append({
+                    'index': i,
+                    'headline': news_item['headline'],
+                    'body': news_item['additional_text'],
+                    'decision_field': f'decision_{i}'
+                })
+        return {'feed_items': feed_items}
+        
     @staticmethod 
     def js_vars(player: Player): 
         vars_dict = {} 
@@ -395,9 +402,7 @@ class FeedTask(Page):
 
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
-        # 1. Calculate the trust score 
         player.calculate_trust_metrics() 
-        # 2. Compile the shared items into a JSON list for Phase 2 
         import json 
         shares = [] 
         for i in range(1, 5): 
