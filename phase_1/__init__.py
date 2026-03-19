@@ -1,5 +1,5 @@
-from otree.api 
-import * import random 
+from otree.api import * 
+import random 
 import csv 
 import os 
 import json 
