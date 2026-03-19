@@ -14,15 +14,15 @@
     <p><strong>Objectives of the project:</strong> The goal of this study is the role of echo chambers in the propagation of information and polarization in regards to climate change.</p>
     
     <p><strong>Methodology and participation:</strong><br>
-    This is the recruitment phase for a longer longitudinal experiment. Today, you will complete a single session fully online, which includes a short screening questionnaire (approx. 5 min) and the initial round of the main experiment (approx. 2 min).<br>
+    This is the recruitment phase for a longer longitudinal experiment. Today, you will complete a single session fully online, which includes a short screening questionnaire (approx. 6 min) and the initial round of the main experiment (approx. 2 min).<br>
     The screening questionnaire will ask basic demographic questions, including political affiliation, and your opinion on climate change. The experiment round consists of reading a feed of news headlines and deciding which ones you are willing to share with your contacts in the experiment network.<br>
-    You will be paid the stated fixed amount ($1.40) for completing today's session.<br><br>
+    You will be paid the stated fixed amount ($1.50) for completing today's session.<br><br>
     <strong>Please be aware:</strong> This is a screening study for a longer experiment. Please proceed only if you are able and willing to commit to a multi-day study. If you are eligible, you will be sent an invitation to the main experiment where:</p>
     <ul>
         <li>You will be asked to log in daily, at a time of your convenience, for 7 additional days.</li>
         <li>Each day, you will complete another round of the main experiment (approx. 2 min).</li>
         <li>On the final day, you will also complete a post-experiment survey (approx. 5 min) asking for your opinion on the subject matter again, as well as feedback on your experience.</li>
-        <li>You will be paid a base rate for every round you participate in ($0.50/round).</li>
+        <li>You will be paid a base rate for every round you participate in ($0.50/round) except the last round which pays $1.75.</li>
         <li>You will receive an additional bonus ($5.00) if you complete at least 6 of the 7 daily rounds.</li>
         <li>If you complete all 7 rounds and the final survey, you will be entered into a lottery for an additional $100.00 prize.</li>
     </ul>
@@ -35,7 +35,7 @@
     
     <p><strong>Risks and benefits:</strong> You will be exposed to news on climate change which may potentially be a sensitive issue. We cannot and do not guarantee that you will receive any benefits from this study apart from the compensation stated below.</p>
     
-    <p><strong>Compensation:</strong> Your participation will be compensated on completion of the experiment. The compensation will follow the upper end of recommended Prolific rate 12$/h and an estimate of completion time of 7 minutes, the total compensation will be $1.40.</p>
+    <p><strong>Compensation:</strong> Your participation will be compensated on completion of the experiment. The compensation is $15/hour, above the recommended prolific rate of $12/hour, +$5 bonus and a participation to the lottery if conditions are met.</p>
     
     <p><strong>Data protection:</strong> In order to protect your privacy, we will not identify your data with your Name or Prolific ID, but rather with a code that will only be known to the research team members. The data collected during the experiment cannot be used to identify you (except via the Prolific ID, but once data collection is over, we will destroy the file matching your experimental data and your Prolific ID. Thus, once the experiment concludes, we will not be able to delete the data you generated, should you ask for it.<br>
     In case of withdrawal during the experiment, your data will be deleted and none of it will be used for the experiment or for the eventual publication. In order to make data only accessible to research team members, physical data will be stored in a locked secure location and digital data will be stored with access control systems. In the event of data publication, only anonymous data will be published.<br>
@@ -62,14 +62,11 @@
     <p><strong>I UNDERSTAND</strong> that my participation is voluntary and that I can withdraw from or opt out of the study at any time without any need to justify my decision.</p>
 
     <div style="margin-top: 20px; margin-bottom: 20px;">
-        {{ formfield 'consent_participate' }}
-        {{ formfield 'consent_climate' }}
-        {{ formfield 'consent_data' }}
-        {{ formfield 'consent_reuse' }}
-    </div>
-
-    <div style="margin-bottom: 30px;">
-        {{ formfield 'consent_electronic_signature' }}
+        <p>{{ formfield 'consent_participate' label="I GIVE MY CONSENT to participate." }}</p>
+        <p>{{ formfield 'consent_exposed' label="I GIVE MY CONSENT to being exposed to arguments." }}</p>
+        <p>{{ formfield 'consent_data' label="I GIVE MY CONSENT to processing data." }}</p>
+        <p>{{ formfield 'consent_reuse' label="I GIVE MY CONSENT to reusing the data." }}</p>
+        <p>{{ formfield 'consent_age' label="I confirm I am over 18." }}</p>
     </div>
 
     <div class="d-flex justify-content-between mt-5 mb-5">
@@ -83,11 +80,13 @@
         function declineConsent() {
             intentToConsent = false; 
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            // Ensure the form submits even if not all boxes are checked when declining
             document.getElementById('form').submit();
         }
 
         document.getElementById('form').addEventListener('submit', function(e) {
             if (intentToConsent) {
+                // There are now 5 specific consent checkboxes
                 let checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length;
                 if (checkedCount < 5) {
                     e.preventDefault();
