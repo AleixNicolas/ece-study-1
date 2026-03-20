@@ -66,7 +66,8 @@ def vars_for_admin_report(subsession: Subsession):
     opinions_by_group_lists = {} 
 
     for p in consented_players: 
-        grp = p.field_maybe_none('environmental_category') 
+        # ALIGNED: Now using 'category' instead of 'environmental_category'
+        grp = p.field_maybe_none('category') 
         if not grp: 
             grp = "Pending" 
         if grp not in demo_by_group: 
@@ -112,7 +113,7 @@ def vars_for_admin_report(subsession: Subsession):
     shares_env_x_lean = {} 
 
     for p in consented_players: 
-        grp = p.field_maybe_none('environmental_category') 
+        grp = p.field_maybe_none('category') 
         if not grp: 
             grp = "Pending" 
         if grp not in shares_by_group: 
@@ -153,13 +154,25 @@ def vars_for_admin_report(subsession: Subsession):
 
     return report_data 
 
+# ==========================================
+# Reusable Progress Helper
+# ==========================================
+def get_progress(step):
+    total_steps = 5
+    percentage = int((step / total_steps) * 100)
+    return {
+        'current_step': step,
+        'total_steps': total_steps,
+        'progress_percentage': percentage
+    }
 
 class Group(BaseGroup): 
     pass 
 
 class Player(BasePlayer): 
     prolific_id = models.StringField(blank=True) 
-    environmental_category = models.StringField(blank=True) 
+    # ALIGNED: Renamed to match Phase 2 expectation
+    category = models.StringField(blank=True) 
     trust_score = models.IntegerField(blank=True, null=True) 
     trust_score_breakdown = models.LongStringField(blank=True) 
     consent_participate = models.BooleanField(widget=widgets.CheckboxInput, label="I GIVE MY CONSENT to participate.", blank=True) 
@@ -296,16 +309,16 @@ class Player(BasePlayer):
         self.trust_score = max(0, score) 
         self.trust_score_breakdown = f"Score: {self.trust_score} [{' | '.join(reasons) if reasons else 'Clean'}]" 
 
-        # --- NEW CATEGORY LOGIC APPLIED HERE ---
+        # ALIGNED: Exact text matches expected by Phase 2 (underscores instead of spaces)
         if self.opinion_4 is not None:
             if self.opinion_4 < 4:
-                self.environmental_category = 'Low concern'
+                self.category = 'Low_Concern'
             elif self.opinion_4 == 4:
-                self.environmental_category = 'Undecided'
+                self.category = 'Undecided'
             elif self.opinion_4 > 4:
-                self.environmental_category = 'High concern'
+                self.category = 'High_Concern'
         else:
-            self.environmental_category = 'Pending'
+            self.category = 'Pending'
 
 
 # --- PAGES --- 
@@ -313,11 +326,20 @@ class Player(BasePlayer):
 class Consent(Page): 
     form_model = 'player' 
     form_fields = ['consent_participate', 'consent_climate', 'consent_data', 'consent_reuse', 'consent_electronic_signature'] 
+    
+    @staticmethod
+    def vars_for_template(player: Player):
+        return get_progress(1)
 
 class Introduction(Page): 
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == True 
+        
+    @staticmethod
+    def vars_for_template(player: Player):
+        return get_progress(2)
+        
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
         if player.participant.label: 
@@ -326,9 +348,15 @@ class Introduction(Page):
 class Demographics(Page): 
     form_model = 'player' 
     form_fields = ['age_range', 'gender', 'education', 'imc_question', 'political_party', 'user_reference_code'] 
+    
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == True 
+        
+    @staticmethod
+    def vars_for_template(player: Player):
+        return get_progress(3)
+        
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
         if player.user_reference_code: 
@@ -340,19 +368,25 @@ class Opinions(Page):
     form_model = 'player' 
     form_fields = ['opinion_1', 'opinion_2', 'opinion_3', 'opinion_4', 'opinion_summary', 
                    'typing_cpm', 'typing_active_time', 'iki_variance', 'large_text_jumps', 'typing_while_unfocused'] 
+                   
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == True 
+        
     @staticmethod 
     def vars_for_template(player: Player): 
         ordered_fields = player.opinion_order.split(',') 
         questions_data = [{'name': f, 'text': Constants.QUESTIONS[f]['text'], 'left': Constants.QUESTIONS[f]['left'], 'right': Constants.QUESTIONS[f]['right']} for f in ordered_fields] 
-        return {'questions_data': questions_data} 
+        vars_dict = {'questions_data': questions_data}
+        vars_dict.update(get_progress(4))
+        return vars_dict 
+        
     @staticmethod 
     def error_message(player, values): 
         summary = values.get('opinion_summary', '') 
         if summary and (len(summary) < 20 or len(summary) > 150): 
             return "Your summary must be between 20 and 150 characters." 
+            
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
         text = (player.opinion_summary or "").strip().lower() 
@@ -387,7 +421,9 @@ class FeedTask(Page):
                     'body': news_item['additional_text'],
                     'decision_field': f'decision_{i}'
                 })
-        return {'feed_items': feed_items}
+        vars_dict = {'feed_items': feed_items}
+        vars_dict.update(get_progress(5))
+        return vars_dict
         
     @staticmethod 
     def js_vars(player: Player): 

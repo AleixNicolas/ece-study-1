@@ -1,0 +1,9 @@
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="text-muted fw-bold" style="font-size: 0.9rem;">Study Progress</span>
+        <span class="badge bg-secondary">Step {{ current_step }} of {{ total_steps }}</span>
+    </div>
+    <div class="progress" style="height: 10px;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percentage }}%;" aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>

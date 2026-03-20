@@ -28,7 +28,7 @@
                     <tr>
                         <th>Metric</th>
                         <th>Overall Count</th>
-                        <th>By Environment Category</th>
+                        <th>By Assigned Category</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,7 +85,7 @@
                     <tr>
                         <th>Metric</th>
                         <th>Overall Average</th>
-                        <th>By Environment Category</th>
+                        <th>By Assigned Category</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,7 @@
                         <td><strong>{{ share_overall }}%</strong></td>
                     </tr>
                     
-                    <tr><td colspan="2" class="bg-light"><strong>By Environment Category (Overall)</strong></td></tr>
+                    <tr><td colspan="2" class="bg-light"><strong>By Assigned Category (Overall)</strong></td></tr>
                     {{ for group, rate in share_by_group.items() }}
                     <tr>
                         <td class="ps-4">{{ group }}</td>
