@@ -1,24 +1,18 @@
 from otree.api import *
 import random 
-import csv 
 import os 
 import json 
 import statistics 
 
 doc = """ 
 Phase 1: Recruitment, Demographics, and ESS-based Environmental Opinions. 
-With upgraded Telemetry, Bot/LLM mitigation tracking, IMC, and advanced Admin Dashboard. 
-Includes real-time Trust Score computation and robust live reporting. 
+Telemetry and bot tracking moved to Opinions page. Task removed for rapid screening.
 """ 
 
 class Constants(BaseConstants): 
     name_in_url = 'intake' 
     players_per_group = None 
     num_rounds = 1 
-    # Strictly load from CSV. Will throw FileNotFoundError if missing. 
-    csv_path = os.path.join(os.path.dirname(__file__), 'news_items.csv') 
-    with open(csv_path, encoding='utf-8') as f: 
-        NEWS_ITEMS = list(csv.DictReader(f)) 
 
     QUESTIONS = { 
         'opinion_1': {'text': "To what extent do you believe the world's climate is currently changing?", 'left': "Not at all", 'right': "A great deal"}, 
@@ -32,12 +26,6 @@ class Subsession(BaseSubsession):
 
 def creating_session(subsession: Subsession): 
     for player in subsession.get_players(): 
-        selected_items = random.sample(Constants.NEWS_ITEMS, 4) 
-        player.item_1_id = selected_items[0]['id'] 
-        player.item_2_id = selected_items[1]['id'] 
-        player.item_3_id = selected_items[2]['id'] 
-        player.item_4_id = selected_items[3]['id'] 
-
         q_list = ['opinion_1', 'opinion_2', 'opinion_3', 'opinion_4'] 
         random.shuffle(q_list) 
         player.opinion_order = ",".join(q_list) 
@@ -66,7 +54,6 @@ def vars_for_admin_report(subsession: Subsession):
     opinions_by_group_lists = {} 
 
     for p in consented_players: 
-        # ALIGNED: Now using 'category' instead of 'environmental_category'
         grp = p.field_maybe_none('category') 
         if not grp: 
             grp = "Pending" 
@@ -106,59 +93,10 @@ def vars_for_admin_report(subsession: Subsession):
         ops_group_avg[grp] = {k: safe_avg(v) for k, v in ops.items()} 
     report_data['opinions_by_group'] = ops_group_avg 
 
-    item_dict = {item['id']: item for item in Constants.NEWS_ITEMS} 
-    shares_overall = {'total': 0, 'shared': 0} 
-    shares_by_group = {} 
-    shares_by_leaning = {} 
-    shares_env_x_lean = {} 
-
-    for p in consented_players: 
-        grp = p.field_maybe_none('category') 
-        if not grp: 
-            grp = "Pending" 
-        if grp not in shares_by_group: 
-            shares_by_group[grp] = {'total': 0, 'shared': 0} 
-            shares_env_x_lean[grp] = {} 
-
-        for i in range(1, 5): 
-            decision = p.field_maybe_none(f'decision_{i}') 
-            item_id = p.field_maybe_none(f'item_{i}_id') 
-            if decision and item_id in item_dict: 
-                is_shared = 1 if decision == 'Share' else 0 
-                item_data = item_dict[item_id] 
-                lean = item_data.get('leaning', 'Unknown') 
-
-                shares_overall['total'] += 1 
-                shares_overall['shared'] += is_shared 
-                shares_by_group[grp]['total'] += 1 
-                shares_by_group[grp]['shared'] += is_shared 
-
-                if lean not in shares_by_leaning: shares_by_leaning[lean] = {'total': 0, 'shared': 0} 
-                shares_by_leaning[lean]['total'] += 1 
-                shares_by_leaning[lean]['shared'] += is_shared 
-                if lean not in shares_env_x_lean[grp]: 
-                    shares_env_x_lean[grp][lean] = {'total': 0, 'shared': 0} 
-                shares_env_x_lean[grp][lean]['total'] += 1 
-                shares_env_x_lean[grp][lean]['shared'] += is_shared 
-
-    def calc_rate(data_dict): 
-        if data_dict['total'] == 0: return 0 
-        return round((data_dict['shared'] / data_dict['total']) * 100, 1) 
-
-    report_data['share_overall'] = calc_rate(shares_overall) 
-    report_data['share_by_group'] = {k: calc_rate(v) for k, v in shares_by_group.items()} 
-    report_data['share_by_item_leaning'] = {k: calc_rate(v) for k, v in shares_by_leaning.items()} 
-    report_data['share_by_env_x_lean'] = {} 
-    for grp, lean_data in shares_env_x_lean.items(): 
-        report_data['share_by_env_x_lean'][grp] = {k: calc_rate(v) for k, v in lean_data.items()} 
-
     return report_data 
 
-# ==========================================
-# Reusable Progress Helper
-# ==========================================
 def get_progress(step):
-    total_steps = 5
+    total_steps = 4
     percentage = int((step / total_steps) * 100)
     return {
         'current_step': step,
@@ -171,7 +109,6 @@ class Group(BaseGroup):
 
 class Player(BasePlayer): 
     prolific_id = models.StringField(blank=True) 
-    # ALIGNED: Renamed to match Phase 2 expectation
     category = models.StringField(blank=True) 
     trust_score = models.IntegerField(blank=True, null=True) 
     trust_score_breakdown = models.LongStringField(blank=True) 
@@ -202,46 +139,17 @@ class Player(BasePlayer):
     user_reference_code = models.StringField(blank=True) 
     is_ai_bot = models.BooleanField(initial=False) 
     is_honeypot_bot = models.BooleanField(initial=False) 
+    
     typing_cpm = models.FloatField(initial=0.0, blank=True) 
     typing_active_time = models.FloatField(initial=0.0, blank=True) 
     iki_variance = models.FloatField(initial=0.0, blank=True) 
     large_text_jumps = models.IntegerField(initial=0, blank=True) 
     typing_while_unfocused = models.IntegerField(initial=0, blank=True) 
-
     dirty_click_count = models.IntegerField(initial=0) 
     click_log = models.LongStringField(initial="", blank=True) 
     mouse_trajectory_log = models.LongStringField(initial="", blank=True) 
-    total_time_on_feed = models.FloatField(blank=True) 
-    window_width = models.IntegerField(blank=True) 
+    window_width = models.IntegerField(blank=True, initial=1920) 
     window_height = models.IntegerField(initial=0, blank=True) 
-    average_feed_size = models.FloatField(blank=True) 
-    max_feed_size = models.IntegerField(blank=True) 
-    average_pending_items = models.FloatField(blank=True) 
-    max_pending_items = models.IntegerField(blank=True) 
-
-    item_1_id = models.StringField() 
-    item_2_id = models.StringField() 
-    item_3_id = models.StringField() 
-    item_4_id = models.StringField() 
-    decision_1 = models.StringField(choices=['Share', 'Do not Share'], widget=widgets.RadioSelect) 
-    decision_2 = models.StringField(choices=['Share', 'Do not Share'], widget=widgets.RadioSelect) 
-    decision_3 = models.StringField(choices=['Share', 'Do not Share'], widget=widgets.RadioSelect) 
-    decision_4 = models.StringField(choices=['Share', 'Do not Share'], widget=widgets.RadioSelect) 
-
-    outgoing_shares = models.LongStringField(initial="[]", blank=True) 
-
-    read_time_1 = models.IntegerField(blank=True) 
-    read_time_2 = models.IntegerField(blank=True) 
-    read_time_3 = models.IntegerField(blank=True) 
-    read_time_4 = models.IntegerField(blank=True) 
-    rt_first_1 = models.IntegerField(blank=True) 
-    rt_first_2 = models.IntegerField(blank=True) 
-    rt_first_3 = models.IntegerField(blank=True) 
-    rt_first_4 = models.IntegerField(blank=True) 
-    rt_final_1 = models.IntegerField(blank=True) 
-    rt_final_2 = models.IntegerField(blank=True) 
-    rt_final_3 = models.IntegerField(blank=True) 
-    rt_final_4 = models.IntegerField(blank=True) 
 
     def calculate_trust_metrics(self): 
         score = 100 
@@ -291,15 +199,6 @@ class Player(BasePlayer):
                 except Exception: 
                     pass 
 
-        rt_vals = [self.rt_first_1, self.rt_first_2, self.rt_first_3, self.rt_first_4] 
-        rt_vals = [rt for rt in rt_vals if rt is not None] 
-        if len(rt_vals) == 4: 
-            try: 
-                sd = statistics.stdev(rt_vals) 
-                reasons.append(f"[INFO: RT SD={sd:.2f}]") 
-            except statistics.StatisticsError: 
-                pass 
-
         blurs = self.dirty_click_count if self.dirty_click_count else 0 
         if blurs > 3: 
             penalty = int((blurs - 3) * 10) 
@@ -309,7 +208,6 @@ class Player(BasePlayer):
         self.trust_score = max(0, score) 
         self.trust_score_breakdown = f"Score: {self.trust_score} [{' | '.join(reasons) if reasons else 'Clean'}]" 
 
-        # ALIGNED: Exact text matches expected by Phase 2 (underscores instead of spaces)
         if self.opinion_4 is not None:
             if self.opinion_4 < 4:
                 self.category = 'Low_Concern'
@@ -320,8 +218,6 @@ class Player(BasePlayer):
         else:
             self.category = 'Pending'
 
-
-# --- PAGES --- 
 
 class Consent(Page): 
     form_model = 'player' 
@@ -367,7 +263,8 @@ class Demographics(Page):
 class Opinions(Page): 
     form_model = 'player' 
     form_fields = ['opinion_1', 'opinion_2', 'opinion_3', 'opinion_4', 'opinion_summary', 
-                   'typing_cpm', 'typing_active_time', 'iki_variance', 'large_text_jumps', 'typing_while_unfocused'] 
+                   'typing_cpm', 'typing_active_time', 'iki_variance', 'large_text_jumps', 'typing_while_unfocused',
+                   'click_log', 'mouse_trajectory_log', 'window_width', 'window_height', 'dirty_click_count'] 
                    
     @staticmethod 
     def is_displayed(player: Player): 
@@ -392,61 +289,7 @@ class Opinions(Page):
         text = (player.opinion_summary or "").strip().lower() 
         if text.startswith("in essence, truly"): 
             player.is_ai_bot = True 
-
-class FeedTask(Page): 
-    form_model = 'player' 
-    form_fields = [ 
-        'decision_1', 'decision_2', 'decision_3', 'decision_4', 
-        'click_log', 'mouse_trajectory_log', 'total_time_on_feed', 'window_width', 'window_height', 'dirty_click_count', 
-        'average_feed_size', 'max_feed_size', 'average_pending_items', 'max_pending_items', 
-        'read_time_1', 'read_time_2', 'read_time_3', 'read_time_4', 
-        'rt_first_1', 'rt_first_2', 'rt_first_3', 'rt_first_4', 
-        'rt_final_1', 'rt_final_2', 'rt_final_3', 'rt_final_4' 
-    ] 
-    
-    @staticmethod 
-    def is_displayed(player: Player): 
-        return player.field_maybe_none('consent_participate') == True 
-        
-    @staticmethod 
-    def vars_for_template(player: Player): 
-        feed_items = []
-        for i in range(1, 5): 
-            item_id = getattr(player, f"item_{i}_id") 
-            news_item = next((n for n in Constants.NEWS_ITEMS if n['id'] == item_id), None) 
-            if news_item: 
-                feed_items.append({
-                    'index': i,
-                    'headline': news_item['headline'],
-                    'body': news_item['additional_text'],
-                    'decision_field': f'decision_{i}'
-                })
-        vars_dict = {'feed_items': feed_items}
-        vars_dict.update(get_progress(5))
-        return vars_dict
-        
-    @staticmethod 
-    def js_vars(player: Player): 
-        vars_dict = {} 
-        for i in range(1, 5): 
-            item_id = getattr(player, f"item_{i}_id") 
-            news_item = next((n for n in Constants.NEWS_ITEMS if n['id'] == item_id), None) 
-            if news_item: 
-                vars_dict[f'item_{i}_headline'] = news_item['headline'] 
-                vars_dict[f'item_{i}_body'] = news_item['additional_text'] 
-        return vars_dict 
-
-    @staticmethod 
-    def before_next_page(player: Player, timeout_happened): 
-        player.calculate_trust_metrics() 
-        import json 
-        shares = [] 
-        for i in range(1, 5): 
-            decision = getattr(player, f'decision_{i}') 
-            if decision == 'Share': 
-                item_id = getattr(player, f'item_{i}_id') 
-                shares.append(item_id) 
-        player.outgoing_shares = json.dumps(shares) 
+        player.calculate_trust_metrics()
 
 class SuccessScreen(Page): 
     @staticmethod 
@@ -458,4 +301,4 @@ class Screenout(Page):
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == False 
 
-page_sequence = [Consent, Introduction, Demographics, Opinions, FeedTask, SuccessScreen, Screenout]
+page_sequence = [Consent, Introduction, Demographics, Opinions, SuccessScreen, Screenout]

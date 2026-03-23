@@ -31,16 +31,14 @@
     <p class="mb-4">Please indicate your response to the following items based on your current views.</p>
 
     {{ for q in questions_data }}
-        <div class="mb-4 shadow-sm p-4 border rounded bg-light">
+        <div class="mb-4 shadow-sm p-4 border rounded bg-light" onclick="logAction('click_{{ q.name }}')">
             <p class="fw-bold mb-2 text-center" style="font-size: 1.05rem;">{{ q.text }}</p>
             
             <div class="likert-container">
                 <div class="likert-anchor anchor-left">{{ q.left }}</div>
-                
                 <div class="likert-inputs">
                     {{ formfield q.name label="" }}
                 </div>
-                
                 <div class="likert-anchor anchor-right">{{ q.right }}</div>
             </div>
         </div>
@@ -65,87 +63,117 @@
     <input type="hidden" name="iki_variance" id="iki_variance" value="0">
     <input type="hidden" name="large_text_jumps" id="large_text_jumps" value="0">
     <input type="hidden" name="typing_while_unfocused" id="typing_while_unfocused" value="0">
+    
+    <input type="hidden" name="click_log" id="click_log"> 
+    <input type="hidden" name="mouse_trajectory_log" id="mouse_trajectory_log"> 
+    <input type="hidden" name="window_width" id="window_width"> 
+    <input type="hidden" name="window_height" id="window_height"> 
+    <input type="hidden" name="dirty_click_count" id="dirty_click_count" value="0"> 
 
     <div class="text-center mt-4 mb-5">
-        {{ next_button }}
+        <button type="button" class="btn btn-primary otree-btn-next" onclick="finalizeTelemetry()">Next</button>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.getElementById('id_opinion_summary');
-            const counter = document.getElementById('char-count');
-            
-            let lastLength = 0;
-            let largeJumps = 0;
-            let keystrokeTimes = [];
-            let typingStartTime = null;
-            
-            let isWindowFocused = true;
-            let unfocusedTypingCount = 0;
-            
-            document.addEventListener("visibilitychange", () => {
-                if (document.hidden) {
-                    isWindowFocused = false;
-                } else {
-                    isWindowFocused = true;
+        let events = []; 
+        let start = Date.now(); 
+        let isFocused = true; 
+        let mousePathBuffer = []; 
+        let savedTrajectories = [];
+        
+        document.getElementById('window_width').value = window.innerWidth; 
+        document.getElementById('window_height').value = window.innerHeight; 
+
+        document.addEventListener("visibilitychange", () => { 
+            if (document.hidden) { 
+                isFocused = false; 
+                logAction('tab_hidden'); 
+                let countEl = document.getElementById('dirty_click_count'); 
+                countEl.value = parseInt(countEl.value) + 1; 
+            } else { 
+                isFocused = true; 
+                logAction('tab_visible'); 
+            } 
+        }); 
+
+        document.addEventListener('mousemove', (e) => { 
+            if (mousePathBuffer.length > 40) mousePathBuffer.shift(); 
+            mousePathBuffer.push({x: e.clientX, y: e.clientY, t: Date.now() - start}); 
+        }); 
+
+        function logAction(action) { 
+            events.push({a: action, t: Date.now() - start}); 
+            savedTrajectories.push({action: action, path: [...mousePathBuffer]});
+        } 
+
+        const textarea = document.getElementById('id_opinion_summary');
+        const counter = document.getElementById('char-count');
+        
+        let lastLength = 0;
+        let largeJumps = 0;
+        let keystrokeTimes = [];
+        let typingStartTime = null;
+        let unfocusedTypingCount = 0;
+
+        if (textarea) {
+            textarea.setAttribute('minlength', '20');
+            textarea.setAttribute('maxlength', '150');
+
+            textarea.addEventListener('input', function(e) {
+                let currentLength = this.value.length;
+                let now = Date.now();
+                
+                if (!isFocused && e.inputType === "insertText") {
+                    unfocusedTypingCount++;
+                    document.getElementById('typing_while_unfocused').value = unfocusedTypingCount;
                 }
+
+                counter.textContent = currentLength + ' / 150 characters';
+                if (currentLength < 20 || currentLength > 150) {
+                    counter.style.color = '#dc3545'; 
+                } else {
+                    counter.style.color = ''; 
+                }
+                
+                let lengthDelta = currentLength - lastLength;
+                if (lengthDelta > 15) {
+                    largeJumps++;
+                    document.getElementById('large_text_jumps').value = largeJumps;
+                }
+                lastLength = currentLength;
+
+                if (!typingStartTime) typingStartTime = now;
+                keystrokeTimes.push(now);
             });
+        }
 
-            if (textarea) {
-                textarea.setAttribute('minlength', '20');
-                textarea.setAttribute('maxlength', '150');
+        function finalizeTelemetry() {
+            if (keystrokeTimes.length > 1) {
+                let activeTimeSec = (keystrokeTimes[keystrokeTimes.length - 1] - keystrokeTimes[0]) / 1000;
+                document.getElementById('typing_active_time').value = activeTimeSec.toFixed(2);
+                
+                if (activeTimeSec > 0) {
+                    let mins = activeTimeSec / 60;
+                    let cpm = textarea.value.length / mins;
+                    document.getElementById('typing_cpm').value = cpm.toFixed(2);
+                }
 
-                textarea.addEventListener('input', function(e) {
-                    let currentLength = this.value.length;
-                    let now = Date.now();
-                    
-                    if (!isWindowFocused && e.inputType === "insertText") {
-                        unfocusedTypingCount++;
-                        document.getElementById('typing_while_unfocused').value = unfocusedTypingCount;
-                    }
-
-                    counter.textContent = currentLength + ' / 150 characters';
-                    if (currentLength < 20 || currentLength > 150) {
-                        counter.style.color = '#dc3545'; 
-                    } else {
-                        counter.style.color = ''; 
-                    }
-                    
-                    let lengthDelta = currentLength - lastLength;
-                    if (lengthDelta > 15) {
-                        largeJumps++;
-                        document.getElementById('large_text_jumps').value = largeJumps;
-                    }
-                    lastLength = currentLength;
-
-                    if (!typingStartTime) typingStartTime = now;
-                    keystrokeTimes.push(now);
-                });
-
-                document.querySelector('form').addEventListener('submit', function() {
-                    if (keystrokeTimes.length > 1) {
-                        let activeTimeSec = (keystrokeTimes[keystrokeTimes.length - 1] - keystrokeTimes[0]) / 1000;
-                        document.getElementById('typing_active_time').value = activeTimeSec.toFixed(2);
-                        
-                        if (activeTimeSec > 0) {
-                            let mins = activeTimeSec / 60;
-                            let cpm = textarea.value.length / mins;
-                            document.getElementById('typing_cpm').value = cpm.toFixed(2);
-                        }
-
-                        let intervals = [];
-                        for (let i = 1; i < keystrokeTimes.length; i++) {
-                            intervals.push(keystrokeTimes[i] - keystrokeTimes[i-1]);
-                        }
-                        
-                        let meanIki = intervals.reduce((a, b) => a + b) / intervals.length;
-                        let sqDiff = intervals.map(i => Math.pow(i - meanIki, 2));
-                        let variance = sqDiff.reduce((a, b) => a + b) / intervals.length;
-                        
-                        document.getElementById('iki_variance').value = variance.toFixed(2);
-                    }
-                });
+                let intervals = [];
+                for (let i = 1; i < keystrokeTimes.length; i++) {
+                    intervals.push(keystrokeTimes[i] - keystrokeTimes[i-1]);
+                }
+                
+                let meanIki = intervals.reduce((a, b) => a + b) / intervals.length;
+                let sqDiff = intervals.map(i => Math.pow(i - meanIki, 2));
+                let variance = sqDiff.reduce((a, b) => a + b) / intervals.length;
+                
+                document.getElementById('iki_variance').value = variance.toFixed(2);
             }
-        });
+            
+            document.getElementById('click_log').value = JSON.stringify(events); 
+            document.getElementById('mouse_trajectory_log').value = JSON.stringify(savedTrajectories); 
+            
+            document.getElementById('form').submit();
+        }
     </script>
 {{ endblock }}

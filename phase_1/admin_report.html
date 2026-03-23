@@ -1,6 +1,5 @@
 <div class="container-fluid mb-5">
     <h3 class="mb-4">Live Experiment Diagnostics & Distributions</h3>
-
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Session Overview</h5>
@@ -17,67 +16,9 @@
             </table>
         </div>
     </div>
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">Demographics Distribution</h5>
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                    <tr>
-                        <th>Metric</th>
-                        <th>Overall Count</th>
-                        <th>By Assigned Category</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Age Range</strong></td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for key, val in demo_overall.age.items() }}
-                                <li>{{ key }}: {{ val }}</li>
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for group, data in demo_by_group.items() }}
-                                <li><strong>{{ group }}</strong>: 
-                                    {{ for k, v in data.age.items() }}{{ k }}({{ v }}) {{ endfor }}
-                                </li>
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Gender</strong></td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for key, val in demo_overall.gender.items() }}
-                                <li>{{ key }}: {{ val }}</li>
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for group, data in demo_by_group.items() }}
-                                <li><strong>{{ group }}</strong>: 
-                                    {{ for k, v in data.gender.items() }}{{ k }}({{ v }}) {{ endfor }}
-                                </li>
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">Trust Score & Opinions Average (1-7 Scale)</h5>
+            <h5 class="mb-0">Trust Score (Out of 100)</h5>
         </div>
         <div class="card-body">
             <table class="table table-bordered table-sm">
@@ -100,74 +41,6 @@
                             </ul>
                         </td>
                     </tr>
-                    {{ for op_key, op_data in opinions_overall.items() }}
-                    <tr>
-                        <td><strong>{{ op_key }}</strong></td>
-                        <td>{{ op_data }}</td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for group, group_ops in opinions_by_group.items() }}
-                                    {{ for gk, gv in group_ops.items() }}
-                                        {{ if gk == op_key }}
-                                            <li><strong>{{ group }}</strong>: {{ gv }}</li>
-                                        {{ endif }}
-                                    {{ endfor }}
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                    </tr>
-                    {{ endfor }}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">Article Share Rates</h5>
-        </div>
-        <div class="card-body">
-            <p class="text-muted small">Percentage of displayed items that were shared.</p>
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                    <tr>
-                        <th>Slice</th>
-                        <th>Share Rate (%)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Overall Share Rate</strong></td>
-                        <td><strong>{{ share_overall }}%</strong></td>
-                    </tr>
-                    
-                    <tr><td colspan="2" class="bg-light"><strong>By Assigned Category (Overall)</strong></td></tr>
-                    {{ for group, rate in share_by_group.items() }}
-                    <tr>
-                        <td class="ps-4">{{ group }}</td>
-                        <td>{{ rate }}%</td>
-                    </tr>
-                    {{ endfor }}
-                    
-                    <tr><td colspan="2" class="bg-light"><strong>By Article Leaning</strong></td></tr>
-                    {{ for lean, rate in share_by_item_leaning.items() }}
-                    <tr>
-                        <td class="ps-4">{{ lean }}</td>
-                        <td>{{ rate }}%</td>
-                    </tr>
-                    {{ endfor }}
-                    
-                    <tr><td colspan="2" class="bg-light"><strong>By Participant Category & Article Leaning</strong></td></tr>
-                    {{ for grp, lean_data in share_by_env_x_lean.items() }}
-                        <tr><td colspan="2" class="ps-3 text-secondary" style="background-color: #fcfcfc;"><em>{{ grp }}</em></td></tr>
-                        {{ for lean, rate in lean_data.items() }}
-                        <tr>
-                            <td class="ps-5">{{ lean }}</td>
-                            <td>{{ rate }}%</td>
-                        </tr>
-                        {{ endfor }}
-                    {{ endfor }}
-
                 </tbody>
             </table>
         </div>
