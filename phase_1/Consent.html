@@ -14,17 +14,17 @@
 <p><strong>Funding body:</strong> This project is funded by project CNS2022-136178 financed by MCIN/AEI/10.13039/501100011033 and by the European Union Next Generation EU/PRTR.</p> 
 <p><strong>Objectives of the project:</strong> The goal of this study is the role of echo chambers in the propagation of information and polarization in regards to climate change.</p> 
 <p><strong>Methodology and participation:</strong><br> 
-This is the recruitment phase for a longer longitudinal experiment. Today, you will complete a single session fully online, which includes a short screening questionnaire (approx. 6 min) and the initial round of the main experiment (approx. 2 min).<br> 
+This is the recruitment phase for a longer longitudinal experiment. Today, you will complete a single session fully online, which includes a short screening questionnaire (approx. 4 min) and the initial round of the main experiment (approx. 2 min).<br> 
 The screening questionnaire will ask basic demographic questions, including political affiliation, and your opinion on climate change. The experiment round consists of reading a feed of news headlines and deciding which ones you are willing to share with your contacts in the experiment network.<br> 
-You will be paid the stated fixed amount ($1.75) for completing today's session.<br><br> 
+You will be paid the stated fixed amount ($1.50) for completing today's session.<br><br> 
 <strong>Please be aware:</strong> This is a screening study for a longer experiment. Please proceed only if you are able and willing to commit to a multi-day study. If you are eligible, you will be sent an invitation to the main experiment where:</p> 
 <ul> 
 <li>You will be asked to log in daily, at a time of your convenience, for 7 additional days.</li> 
 <li>Each day, you will complete another round of the main experiment (approx. 2 min).</li> 
-<li>On the final day, you will also complete a post-experiment survey (approx. 5 min) asking for your opinion on the subject matter again, as well as feedback on your experience.</li> 
-<li>You will be paid a base rate for every round you participate in ($0.50/round) except the last round which pays $1.75.</li> 
-<li>You will receive an additional bonus ($5.00) if you complete at least 6 of the 7 daily rounds.</li> 
-<li>If you complete all 7 rounds and the final survey, you will be entered into a lottery for an additional $100.00 prize.</li> 
+<li>On the final day, you will also complete a post-experiment survey (approx. 4 min) asking for your opinion on the subject matter again, as well as feedback on your experience.</li> 
+<li>You will be paid a base rate for every additional round you participate in ($0.50/round), except the last round which pays $1.50.</li> 
+<li>You will receive an additional bonus ($5.00) if you complete at least 6 of the 7 additional daily rounds.</li> 
+<li>If you complete all 7 additional rounds (perfect attendance), you will be entered into a lottery for an additional $100.00 prize.</li> 
 </ul> 
 
 <p><strong>Inclusion criteria:</strong> Participants must be residing in the U.S and be over 18 years of age.</p> 
@@ -72,21 +72,21 @@ Payment-related data will be kept for the duration of the project and for its sc
 <script> 
 let intentToConsent = true; 
 function declineConsent() { 
-intentToConsent = false; 
-document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
-// Ensure the form submits even if not all boxes are checked when declining 
-document.getElementById('form').submit(); 
+    intentToConsent = false; 
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
+    // Ensure the form submits even if not all boxes are checked when declining 
+    document.getElementById('form').submit(); 
 } 
 
 document.getElementById('form').addEventListener('submit', function(e) { 
-if (intentToConsent) { 
-// There are now 5 specific consent checkboxes 
-let checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length; 
-if (checkedCount < 5) { 
-e.preventDefault(); 
-alert("You must agree to all conditions to participate, or click 'I Do Not Consent' to exit the study."); 
-} 
-} 
+    if (intentToConsent) { 
+        // There are now 5 specific consent checkboxes 
+        let checkedCount = document.querySelectorAll('input[type="checkbox"]:checked').length; 
+        if (checkedCount < 5) { 
+            e.preventDefault(); 
+            alert("You must agree to all conditions to participate, or click 'I Do Not Consent' to exit the study."); 
+        } 
+    } 
 }); 
 </script> 
 {{ endblock }}
