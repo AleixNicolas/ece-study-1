@@ -4,7 +4,7 @@
     
     <h3>What's Next?</h3>
     <ul>
-        <li>If your profile meets our experiment requirement, you will be invited to a 5 day experiment on <strong>{{ experiment_start_time }}</strong>.</li>
+        <li>If your profile meets our experiment requirement, you will be invited to a 5 day experiment on <strong id="local-time-display">{{ experiment_start_time }}</strong>.</li>
         <li>Invited participants will be assigned on a first-come, first-served basis.</li>
     </ul>
     <strong>Round details:</strong>
@@ -22,4 +22,30 @@
     </div>
     
     <style> .otree-btn-next { display: none; } </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeElement = document.getElementById('local-time-display');
+            // Pull the raw ISO string passed from your __init__.py / Heroku
+            const rawTimeString = "{{ experiment_start_time }}"; 
+            
+            // Check if it's a valid date string (in case the fallback text is used)
+            const parsedDate = new Date(rawTimeString);
+            
+            if (!isNaN(parsedDate.getTime())) {
+                // If it's a valid date, format it to the user's local timezone
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    timeZoneName: 'short' 
+                };
+                // "undefined" allows it to automatically detect the user's locale/language
+                timeElement.textContent = parsedDate.toLocaleString(undefined, options);
+            }
+        });
+    </script>
 {{ endblock }}
