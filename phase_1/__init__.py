@@ -207,7 +207,7 @@ class Opinions(Page):
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
         text = (player.opinion_summary or "").strip().lower() 
-        if "in essence, truly" in text: 
+        if "undeniably complex" in text: 
             player.is_ai_bot = True 
             
         if player.opinion_4 is not None:
