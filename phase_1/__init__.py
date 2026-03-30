@@ -96,7 +96,7 @@ def vars_for_admin_report(subsession: Subsession):
     return report_data 
 
 def get_progress(step):
-    total_steps = 4
+    total_steps = 3
     percentage = int((step / total_steps) * 100)
     return {
         'current_step': step,
@@ -227,19 +227,11 @@ class Consent(Page):
     def vars_for_template(player: Player):
         return get_progress(1)
 
-class Introduction(Page): 
-    @staticmethod 
-    def is_displayed(player: Player): 
-        return player.field_maybe_none('consent_participate') == True 
-        
-    @staticmethod
-    def vars_for_template(player: Player):
-        return get_progress(2)
-        
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
         if player.participant.label: 
             player.prolific_id = player.participant.label 
+
 
 class Demographics(Page): 
     form_model = 'player' 
@@ -251,7 +243,7 @@ class Demographics(Page):
         
     @staticmethod
     def vars_for_template(player: Player):
-        return get_progress(3)
+        return get_progress(2)
         
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
@@ -275,7 +267,7 @@ class Opinions(Page):
         ordered_fields = player.opinion_order.split(',') 
         questions_data = [{'name': f, 'text': Constants.QUESTIONS[f]['text'], 'left': Constants.QUESTIONS[f]['left'], 'right': Constants.QUESTIONS[f]['right']} for f in ordered_fields] 
         vars_dict = {'questions_data': questions_data}
-        vars_dict.update(get_progress(4))
+        vars_dict.update(get_progress(3))
         return vars_dict 
         
     @staticmethod 
@@ -295,10 +287,17 @@ class SuccessScreen(Page):
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == True 
+        
+    @staticmethod
+    def vars_for_template(player: Player):
+        # Fallback to "within the next 48 hours" if the environment variable is not set on Heroku
+        return {
+            'experiment_start_time': os.environ.get('EXPERIMENT_START_TIME', 'within the next 48 hours')
+        }
 
 class Screenout(Page): 
     @staticmethod 
     def is_displayed(player: Player): 
         return player.field_maybe_none('consent_participate') == False 
 
-page_sequence = [Consent, Introduction, Demographics, Opinions, SuccessScreen, Screenout]
+page_sequence = [Consent, Demographics, Opinions, SuccessScreen, Screenout]

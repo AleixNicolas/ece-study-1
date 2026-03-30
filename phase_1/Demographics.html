@@ -13,8 +13,7 @@
     {{ formfield 'political_party' }}
 
     <div style="opacity: 0.01; height: 1px; overflow: hidden; pointer-events: none;" aria-hidden="true">
-        <label for="id_user_reference_code">Please leave this field empty.</label>
-        {{ formfield 'user_reference_code' label="" }}
+        {{ formfield 'user_reference_code' label="Secondary Email (Optional)" }}
     </div>
 
     {{ next_button }}
