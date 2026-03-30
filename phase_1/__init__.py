@@ -130,10 +130,10 @@ class Player(BasePlayer):
     ) 
     imc_failed = models.BooleanField(initial=False) 
     political_party = models.StringField(choices=['Republican', 'Democrat', 'Independent', 'Other'], label="Political party?") 
-    opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5, 6, 7], widget=widgets.RadioSelectHorizontal) 
-    opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5, 6, 7], widget=widgets.RadioSelectHorizontal) 
-    opinion_3 = models.IntegerField(choices=[1, 2, 3, 4, 5, 6, 7], widget=widgets.RadioSelectHorizontal) 
-    opinion_4 = models.IntegerField(choices=[1, 2, 3, 4, 5, 6, 7], widget=widgets.RadioSelectHorizontal) 
+    opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
+    opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
+    opinion_3 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
+    opinion_4 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
     opinion_order = models.StringField() 
     opinion_summary = models.LongStringField(label="Provide a brief summary of your opinion.") 
     user_reference_code = models.StringField(blank=True) 
@@ -209,11 +209,11 @@ class Player(BasePlayer):
         self.trust_score_breakdown = f"Score: {self.trust_score} [{' | '.join(reasons) if reasons else 'Clean'}]" 
 
         if self.opinion_4 is not None:
-            if self.opinion_4 < 4:
+            if self.opinion_4 < 3:
                 self.category = 'Low_Concern'
-            elif self.opinion_4 == 4:
+            elif self.opinion_4 == 3:
                 self.category = 'Undecided'
-            elif self.opinion_4 > 4:
+            elif self.opinion_4 > 3:
                 self.category = 'High_Concern'
         else:
             self.category = 'Pending'
