@@ -1,48 +1,69 @@
-<div class="container-fluid mb-5">
-    <h3 class="mb-4">Live Experiment Diagnostics & Distributions</h3>
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Session Overview</h5>
-        </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <tbody>
-                    <tr><th style="width: 70%;">Total Sessions Initiated</th><td><strong>{{ total_players }}</strong></td></tr>
-                    <tr><th>Consented to Participate</th><td class="text-success"><strong>{{ consented }}</strong></td></tr>
-                    <tr><th>Screened Out (Denied Consent)</th><td class="text-secondary"><strong>{{ screened_out }}</strong></td></tr>
-                    <tr class="table-warning"><th>Failed Attention Check (IMC)</th><td><strong>{{ failed_imc }}</strong></td></tr>
-                    <tr class="table-danger"><th>Flagged as Bots (AI / Honeypot)</th><td><strong>{{ total_bots }}</strong></td></tr>
-                </tbody>
-            </table>
-        </div>
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Phase 1: General Screening Overview</h5>
     </div>
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">Trust Score (Out of 100)</h5>
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                    <tr>
-                        <th>Metric</th>
-                        <th>Overall Average</th>
-                        <th>By Assigned Category</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Computed Trust Score</strong></td>
-                        <td>{{ trust_overall_avg }}</td>
-                        <td>
-                            <ul class="list-unstyled mb-0">
-                                {{ for group, avg in trust_by_group.items() }}
-                                <li><strong>{{ group }}</strong>: {{ avg }}</li>
-                                {{ endfor }}
-                            </ul>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th>Total Players Started</th>
+                    <td>{{ total_players }}</td>
+                </tr>
+                <tr>
+                    <th>Consented & Proceeded</th>
+                    <td>{{ consented }}</td>
+                </tr>
+                <tr>
+                    <th>Declined Consent (Screened Out)</th>
+                    <td>{{ screened_out }}</td>
+                </tr>
+                <tr class="table-warning">
+                    <th>Failed Explicit IMC Check</th>
+                    <td>{{ failed_imc }}</td>
+                </tr>
+                <tr class="table-danger">
+                    <th>Caught by Hard Traps (Honeypot / AI)</th>
+                    <td>{{ total_bots }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Average Environmental Opinions (1 to 5)</h5>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Climate Changing (Q1)</th>
+                    <th>Natural Disasters (Q2)</th>
+                    <th>Personal Resp. (Q3)</th>
+                    <th>Fossil Fuel Taxes (Q4)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Overall Average</strong></td>
+                    <td>{{ opinions_overall.opinion_1 }}</td>
+                    <td>{{ opinions_overall.opinion_2 }}</td>
+                    <td>{{ opinions_overall.opinion_3 }}</td>
+                    <td>{{ opinions_overall.opinion_4 }}</td>
+                </tr>
+                <tr><td colspan="5" class="text-muted mt-3"><em>Averages by preliminary assignment group:</em></td></tr>
+                {{ for grp, ops in opinions_by_group.items }}
+                <tr>
+                    <td>{{ grp }}</td>
+                    <td>{{ ops.opinion_1 }}</td>
+                    <td>{{ ops.opinion_2 }}</td>
+                    <td>{{ ops.opinion_3 }}</td>
+                    <td>{{ ops.opinion_4 }}</td>
+                </tr>
+                {{ endfor }}
+            </tbody>
+        </table>
     </div>
 </div>
