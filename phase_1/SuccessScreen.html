@@ -4,15 +4,14 @@
     
     <h3>What's Next?</h3>
     <ul>
-        <li>If your profile meets our experiment requirement, you will be invited to a 5 day experiment on <strong id="local-time-display">{{ experiment_start_time }}</strong>.</li>
+        <li>If your profile meets our experiment requirement, you will be invited to the next phase on <strong id="local-time-display">{{ experiment_start_time }}</strong>.</li>
         <li>Invited participants will be assigned on a first-come, first-served basis.</li>
     </ul>
-    <strong>Round details:</strong>
+    <strong>The next phase:</strong>
     <ul>
-        <li>Short (2 min.) rounds to be completed once a day at any time within the fixed 24h period.</li>
-        <li>Each round will consist of 4 news headlines with a corresponding summary.</li>
-        <li>You can either share or not share the headlines with the other participants.</li>
-        <li>For each completed round you will receive $0.50. If you complete at least 4 out of the 5 rounds you will receive an additional $5 bonus (completing the last round is necessary). If you complete all rounds you will be included in a $100 lottery between all participants.</li>
+        <li>It will last 5 continuous days, from <strong id="start-date-display">XX</strong> to <strong id="end-date-display">XX</strong>, included. On each day, you will be asked to complete a short (2 min.) task. You can complete the task at any time within 24h.</li>
+        <li>The task will consist of reading 4 news headlines with a corresponding summary (approx. 100 words). You will have to decide to either share or not the headlines.</li>
+        <li>For each completed task, you will receive $0.50. If you participate at least 4 out of the 5 days (including the last one), you will receive an additional $5 bonus. If you complete all rounds you will be included in a $100 lottery between all participants.</li>
     </ul>
 
     <div class="mt-5 text-center">
@@ -26,15 +25,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const timeElement = document.getElementById('local-time-display');
+            const startDateElement = document.getElementById('start-date-display');
+            const endDateElement = document.getElementById('end-date-display');
+            
             // Pull the raw ISO string passed from your __init__.py / Heroku
             const rawTimeString = "{{ experiment_start_time }}"; 
-            
-            // Check if it's a valid date string (in case the fallback text is used)
             const parsedDate = new Date(rawTimeString);
             
             if (!isNaN(parsedDate.getTime())) {
-                // If it's a valid date, format it to the user's local timezone
-                const options = { 
+                // 1. Format the main exact time (e.g., "Wednesday, April 15, 2026 at 4:00 PM GMT+2")
+                const exactTimeOptions = { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
@@ -43,8 +43,16 @@
                     minute: '2-digit', 
                     timeZoneName: 'short' 
                 };
-                // "undefined" allows it to automatically detect the user's locale/language
-                timeElement.textContent = parsedDate.toLocaleString(undefined, options);
+                timeElement.textContent = parsedDate.toLocaleString(undefined, exactTimeOptions);
+
+                // 2. Format a shorter date string for the range (e.g., "April 15")
+                const shortDateOptions = { month: 'short', day: 'numeric' };
+                startDateElement.textContent = parsedDate.toLocaleDateString(undefined, shortDateOptions);
+
+                // 3. Calculate the end date (Start Date + 4 days for a 5-day continuous experiment)
+                const endDate = new Date(parsedDate);
+                endDate.setDate(endDate.getDate() + 4);
+                endDateElement.textContent = endDate.toLocaleDateString(undefined, shortDateOptions);
             }
         });
     </script>
