@@ -31,6 +31,46 @@
             font-size: 1px;
             user-select: all;
         }
+
+        /* --- MOBILE LIKERT FIX --- */
+        @media (max-width: 767px) {
+            .likert-container {
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            .anchor-left {
+                order: 1;
+                text-align: left;
+                flex: 0 0 45%;
+                font-size: 0.8rem;
+                line-height: 1.2;
+            }
+            .anchor-right {
+                order: 2;
+                text-align: right;
+                flex: 0 0 45%;
+                font-size: 0.8rem;
+                line-height: 1.2;
+            }
+            .likert-inputs {
+                order: 3;
+                flex: 0 0 100%;
+                margin-top: 12px;
+            }
+            .likert-inputs .controls {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-between !important;
+                width: 100%;
+            }
+            .likert-inputs .form-check-inline {
+                margin-right: 0 !important;
+            }
+            .likert-inputs label {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 
     <p class="mb-4">Please indicate your response to the following items based on your current views.</p>
@@ -48,14 +88,6 @@
             </div>
         </div>
     {{ endfor }}
-
-    <style>
-        .invisible-prompt {
-            font-size: 1px;
-            color: transparent;
-            opacity: 0.01;
-        }
-    </style>
 
     <div class="mt-5 border-top pt-4">
         <label for="id_opinion_summary" class="fw-bold mb-2">
