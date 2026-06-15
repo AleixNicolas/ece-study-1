@@ -15,11 +15,12 @@ class Constants(BaseConstants):
     num_rounds = 1 
 
     QUESTIONS = { 
-        'opinion_1': {'text': "To what extent do you believe the world's climate is currently changing?", 'left': "Not at all", 'right': "A great deal"}, 
-        'opinion_2': {'text': "How likely do you think it is that climate change will lead to significant natural disasters?", 'left': "Not at all likely", 'right': "Extremely likely"}, 
-        'opinion_3': {'text': "To what extent do you feel a personal responsibility to try to reduce climate change?", 'left': "Not at all", 'right': "A great deal"}, 
+        'opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'opinion_2': {'text': "To what extent do you favor or oppose government subsidizing renewable energies", 'Strongly Opose': "Strongly Favor"}, 
+        'opinion_3': {'text': "To waht extend to you favor or oppose the government prioritizing environmental protection over economic growth?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'opinion_4': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
     } 
+    
 
 class Subsession(BaseSubsession): 
     pass 
