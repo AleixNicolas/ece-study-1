@@ -14,12 +14,12 @@ class Constants(BaseConstants):
     players_per_group = None 
     num_rounds = 1 
 
-QUESTIONS = { 
+    QUESTIONS = { 
         'opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'opinion_2': {'text': "To what extent do you favor or oppose the government subsidizing renewable energies?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'opinion_3': {'text': "To what extent do you favor or oppose the government prioritizing environmental protection over economic growth?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'opinion_4': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
-    }
+    } 
     
 
 class Subsession(BaseSubsession): 
@@ -122,10 +122,10 @@ class Player(BasePlayer):
     imc_failed = models.BooleanField(initial=False) 
     political_party = models.StringField(choices=['Republican', 'Democrat', 'Independent', 'Other'], label="Political party?") 
     
-    opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
-    opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
-    opinion_3 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
-    opinion_4 = models.IntegerField(choices=[1, 2, 3, 4, 5,], widget=widgets.RadioSelectHorizontal) 
+    opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    opinion_3 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    opinion_4 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
     opinion_order = models.StringField() 
     opinion_summary = models.LongStringField(label="Provide a brief summary of your opinion.") 
     
