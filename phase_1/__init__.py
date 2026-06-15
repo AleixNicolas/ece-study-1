@@ -14,12 +14,12 @@ class Constants(BaseConstants):
     players_per_group = None 
     num_rounds = 1 
 
-    QUESTIONS = { 
+QUESTIONS = { 
         'opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'opinion_2': {'text': "To what extent do you favor or oppose government subsidizing renewable energies", 'Strongly Opose': "Strongly Favor"}, 
-        'opinion_3': {'text': "To waht extend to you favor or oppose the government prioritizing environmental protection over economic growth?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'opinion_2': {'text': "To what extent do you favor or oppose the government subsidizing renewable energies?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'opinion_3': {'text': "To what extent do you favor or oppose the government prioritizing environmental protection over economic growth?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'opinion_4': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
-    } 
+    }
     
 
 class Subsession(BaseSubsession): 
