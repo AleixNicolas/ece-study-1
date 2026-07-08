@@ -5,8 +5,8 @@ import json
 import statistics 
 
 doc = """ 
-Phase 1: Recruitment, Demographics, and ESS-based Environmental Opinions. 
-Raw telemetry logging enabled. Dual-axis scoring moved to post-hoc classification script.
+Phase 1: Recruitment, Demographics, and Dual-Topic Opinions. 
+Categorizes participants into LL, LR, RL, RR based on baseline responses (using Q2 as the categorizer).
 """ 
 
 class Constants(BaseConstants): 
@@ -15,10 +15,10 @@ class Constants(BaseConstants):
     num_rounds = 1 
 
     QUESTIONS = { 
-        'opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'opinion_2': {'text': "To what extent do you favor or oppose the government subsidizing renewable energies?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'opinion_3': {'text': "To what extent do you favor or oppose the government prioritizing environmental protection over economic growth?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'opinion_4': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
+        'climate_opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'climate_opinion_2': {'text': "To what extent do you favor or oppose the government subsidizing renewable energies?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'imm_opinion_1': {'text': "To what extent do you favor or oppose increasing the number of legal immigrants allowed into the country?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'imm_opinion_2': {'text': "To what extent do you favor or oppose providing a path to citizenship for undocumented immigrants currently in the country?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
     } 
     
 
@@ -27,9 +27,10 @@ class Subsession(BaseSubsession):
 
 def creating_session(subsession: Subsession): 
     for player in subsession.get_players(): 
-        q_list = ['opinion_1', 'opinion_2', 'opinion_3', 'opinion_4'] 
-        random.shuffle(q_list) 
-        player.opinion_order = ",".join(q_list) 
+        # Decide which topic block is shown first to prevent ordering effects
+        blocks = ['climate', 'imm']
+        random.shuffle(blocks)
+        player.opinion_order = ",".join(blocks) 
 
 def vars_for_admin_report(subsession: Subsession): 
     players = subsession.get_players() 
@@ -43,47 +44,18 @@ def vars_for_admin_report(subsession: Subsession):
         'total_bots': sum([1 for p in consented_players if (p.field_maybe_none('is_ai_bot') == True or p.field_maybe_none('is_honeypot_bot') == True)]), 
     } 
 
-    demo_overall = {'age': {}, 'gender': {}} 
-    demo_by_group = {} 
-    opinions_overall_lists = {'opinion_1': [], 'opinion_2': [], 'opinion_3': [], 'opinion_4': []} 
-    opinions_by_group_lists = {} 
+    categories_count = {'LL': 0, 'LR': 0, 'RL': 0, 'RR': 0, 'Ineligible_Neutral': 0, 'Pending': 0}
 
     for p in consented_players: 
-        grp = p.field_maybe_none('category') 
-        if not grp: 
-            grp = "Pending" 
-        if grp not in demo_by_group: 
-            demo_by_group[grp] = {'age': {}, 'gender': {}} 
-            opinions_by_group_lists[grp] = {'opinion_1': [], 'opinion_2': [], 'opinion_3': [], 'opinion_4': []} 
+        cat = p.field_maybe_none('category') 
+        if not cat: 
+            cat = "Pending" 
+        if cat in categories_count:
+            categories_count[cat] += 1
+        else:
+            categories_count[cat] = 1
 
-        age = p.field_maybe_none('age_range') 
-        if age: 
-            demo_overall['age'][age] = demo_overall['age'].get(age, 0) + 1 
-            demo_by_group[grp]['age'][age] = demo_by_group[grp]['age'].get(age, 0) + 1 
-
-        gender = p.field_maybe_none('gender') 
-        if gender: 
-            demo_overall['gender'][gender] = demo_overall['gender'].get(gender, 0) + 1 
-            demo_by_group[grp]['gender'][gender] = demo_by_group[grp]['gender'].get(gender, 0) + 1 
-
-        for i in range(1, 5): 
-            val = p.field_maybe_none(f'opinion_{i}') 
-            if val is not None: 
-                opinions_overall_lists[f'opinion_{i}'].append(val) 
-                opinions_by_group_lists[grp][f'opinion_{i}'].append(val) 
-
-    def safe_avg(values): 
-        clean_vals = [v for v in values if v is not None] 
-        return round(sum(clean_vals) / len(clean_vals), 2) if clean_vals else 0.0 
-
-    report_data['demo_overall'] = demo_overall 
-    report_data['demo_by_group'] = demo_by_group 
-    report_data['opinions_overall'] = {k: safe_avg(v) for k, v in opinions_overall_lists.items()} 
-    ops_group_avg = {} 
-    for grp, ops in opinions_by_group_lists.items(): 
-        ops_group_avg[grp] = {k: safe_avg(v) for k, v in ops.items()} 
-    report_data['opinions_by_group'] = ops_group_avg 
-
+    report_data['categories_count'] = categories_count
     return report_data 
 
 def get_progress(step):
@@ -110,22 +82,16 @@ class Player(BasePlayer):
     
     age_range = models.StringField(choices=['18-24', '25-34', '35-44', '45-54', '55-64', '65+'], label="What is your age range?") 
     gender = models.StringField(choices=['Male', 'Female', 'Non-binary', 'Prefer not to say'], label="What is your gender?") 
-    education = models.StringField( 
-        choices=['Less Than High School', 'High School', 'Bachelor\'s or Associate', 'Graduate degree'], 
-        label="What is your highest level of education completed?" 
-    ) 
-    imc_question = models.StringField( 
-        choices=['Red', 'Blue', 'Green', 'Yellow', 'Purple'], 
-        label="Please select 'Green' from the options below.", 
-        blank=True 
-    ) 
+    education = models.StringField(choices=['Less Than High School', 'High School', 'Bachelor\'s or Associate', 'Graduate degree'], label="What is your highest level of education completed?") 
+    imc_question = models.StringField(choices=['Red', 'Blue', 'Green', 'Yellow', 'Purple'], label="Please select 'Green' from the options below.", blank=True) 
     imc_failed = models.BooleanField(initial=False) 
     political_party = models.StringField(choices=['Republican', 'Democrat', 'Independent', 'Other'], label="Political party?") 
     
-    opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
-    opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
-    opinion_3 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
-    opinion_4 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    climate_opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    climate_opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    imm_opinion_1 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    imm_opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
+    
     opinion_order = models.StringField() 
     opinion_summary = models.LongStringField(label="Provide a brief summary of your opinion.") 
     
@@ -182,7 +148,7 @@ class Demographics(Page):
 
 class Opinions(Page): 
     form_model = 'player' 
-    form_fields = ['opinion_1', 'opinion_2', 'opinion_3', 'opinion_4', 'opinion_summary', 
+    form_fields = ['climate_opinion_1', 'climate_opinion_2', 'imm_opinion_1', 'imm_opinion_2', 'opinion_summary', 
                    'typing_cpm', 'typing_active_time', 'iki_variance', 'typing_while_unfocused', 'paste_count', 
                    'time_to_first_interaction', 'time_of_first_paste', 'total_page_time',
                    'click_log', 'mouse_trajectory_log', 'window_width', 'window_height', 'dirty_click_count'] 
@@ -193,8 +159,20 @@ class Opinions(Page):
         
     @staticmethod 
     def vars_for_template(player: Player): 
-        ordered_fields = player.opinion_order.split(',') 
-        questions_data = [{'name': f, 'text': Constants.QUESTIONS[f]['text'], 'left': Constants.QUESTIONS[f]['left'], 'right': Constants.QUESTIONS[f]['right']} for f in ordered_fields] 
+        blocks = player.opinion_order.split(',') 
+        questions_data = []
+        for block in blocks:
+            if block == 'climate':
+                questions_data.extend([
+                    {'name': 'climate_opinion_1', 'text': Constants.QUESTIONS['climate_opinion_1']['text'], 'left': Constants.QUESTIONS['climate_opinion_1']['left'], 'right': Constants.QUESTIONS['climate_opinion_1']['right'], 'header': 'Climate Policy'},
+                    {'name': 'climate_opinion_2', 'text': Constants.QUESTIONS['climate_opinion_2']['text'], 'left': Constants.QUESTIONS['climate_opinion_2']['left'], 'right': Constants.QUESTIONS['climate_opinion_2']['right']}
+                ])
+            elif block == 'imm':
+                questions_data.extend([
+                    {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right'], 'header': 'Immigration Policy'},
+                    {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right']}
+                ])
+                
         vars_dict = {'questions_data': questions_data}
         vars_dict.update(get_progress(3))
         return vars_dict 
@@ -211,13 +189,18 @@ class Opinions(Page):
         if "undeniably complex" in text: 
             player.is_ai_bot = True 
             
-        if player.opinion_4 is not None:
-            if player.opinion_4 < 3:
-                player.category = 'Low_Concern'
-            elif player.opinion_4 == 3:
-                player.category = 'Undecided'
-            elif player.opinion_4 > 3:
-                player.category = 'High_Concern'
+        # Using the SECOND question to categorize the participant
+        c_op = player.climate_opinion_2
+        i_op = player.imm_opinion_2
+        
+        if c_op is not None and i_op is not None:
+            if c_op == 3 or i_op == 3:
+                player.category = 'Ineligible_Neutral'
+            else:
+                # 4,5 = Favor (Left), 1,2 = Oppose (Right)
+                c_val = 'L' if c_op > 3 else 'R'
+                i_val = 'L' if i_op > 3 else 'R'
+                player.category = f"{c_val}{i_val}"
         else:
             player.category = 'Pending'
 
@@ -228,9 +211,7 @@ class SuccessScreen(Page):
         
     @staticmethod
     def vars_for_template(player: Player):
-        return {
-            'experiment_start_time': os.environ.get('EXPERIMENT_START_TIME', 'within the next 48 hours')
-        }
+        return {'experiment_start_time': os.environ.get('EXPERIMENT_START_TIME', 'within the next 48 hours')}
 
 class Screenout(Page): 
     @staticmethod 
