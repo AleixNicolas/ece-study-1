@@ -165,17 +165,17 @@ class Opinions(Page):
             if block == 'climate':
                 questions_data.extend([
                     {'name': 'climate_opinion_1', 'text': Constants.QUESTIONS['climate_opinion_1']['text'], 'left': Constants.QUESTIONS['climate_opinion_1']['left'], 'right': Constants.QUESTIONS['climate_opinion_1']['right'], 'header': 'Climate Policy'},
-                    {'name': 'climate_opinion_2', 'text': Constants.QUESTIONS['climate_opinion_2']['text'], 'left': Constants.QUESTIONS['climate_opinion_2']['left'], 'right': Constants.QUESTIONS['climate_opinion_2']['right']}
+                    {'name': 'climate_opinion_2', 'text': Constants.QUESTIONS['climate_opinion_2']['text'], 'left': Constants.QUESTIONS['climate_opinion_2']['left'], 'right': Constants.QUESTIONS['climate_opinion_2']['right'], 'header': ''}
                 ])
             elif block == 'imm':
                 questions_data.extend([
                     {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right'], 'header': 'Immigration Policy'},
-                    {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right']}
+                    {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right'], 'header': ''}
                 ])
                 
         vars_dict = {'questions_data': questions_data}
         vars_dict.update(get_progress(3))
-        return vars_dict 
+        return vars_dict
         
     @staticmethod 
     def error_message(player, values): 
