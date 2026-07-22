@@ -16,10 +16,10 @@ class Constants(BaseConstants):
 
     QUESTIONS = { 
         'climate_opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'climate_opinion_2': {'text': "To what extent do you favor or oppose the government subsidizing renewable energies?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'imm_opinion_1': {'text': "To what extent do you favor or oppose increasing the number of legal immigrants allowed into the country?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'imm_opinion_2': {'text': "To what extent do you favor or oppose providing a path to citizenship for undocumented immigrants currently in the country?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
-    } 
+        'climate_opinion_2': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'imm_opinion_1': {'text': "To what extent do you favor reducing federal immigration enforcement?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'imm_opinion_2': {'text': "To what extent do you favor the government providing immigrants a pathway to legal status over deportation?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
+    }
     
 
 class Subsession(BaseSubsession): 
@@ -169,7 +169,7 @@ class Opinions(Page):
                 ])
             elif block == 'imm':
                 questions_data.extend([
-                    {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right'], 'header': 'Immigration Policy'},
+                    {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right'], 'header': 'Immigration'},
                     {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right'], 'header': ''}
                 ])
                 
