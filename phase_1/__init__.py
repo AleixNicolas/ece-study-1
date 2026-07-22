@@ -93,7 +93,8 @@ class Player(BasePlayer):
     imm_opinion_2 = models.IntegerField(choices=[1, 2, 3, 4, 5], widget=widgets.RadioSelectHorizontal) 
     
     opinion_order = models.StringField() 
-    opinion_summary = models.LongStringField(label="Provide a brief summary of your opinion.") 
+    climate_opinion_summary = models.LongStringField(label="Provide a brief summary of your climate opinion.") 
+    imm_opinion_summary = models.LongStringField(label="Provide a brief summary of your immigration opinion.") 
     
     system_status_flag = models.StringField(blank=True) 
     is_ai_bot = models.BooleanField(initial=False) 
@@ -148,7 +149,8 @@ class Demographics(Page):
 
 class Opinions(Page): 
     form_model = 'player' 
-    form_fields = ['climate_opinion_1', 'climate_opinion_2', 'imm_opinion_1', 'imm_opinion_2', 'opinion_summary', 
+    form_fields = ['climate_opinion_1', 'climate_opinion_2', 'imm_opinion_1', 'imm_opinion_2', 
+                   'climate_opinion_summary', 'imm_opinion_summary', 
                    'typing_cpm', 'typing_active_time', 'iki_variance', 'typing_while_unfocused', 'paste_count', 
                    'time_to_first_interaction', 'time_of_first_paste', 'total_page_time',
                    'click_log', 'mouse_trajectory_log', 'window_width', 'window_height', 'dirty_click_count'] 
@@ -160,33 +162,55 @@ class Opinions(Page):
     @staticmethod 
     def vars_for_template(player: Player): 
         blocks = player.opinion_order.split(',') 
-        questions_data = []
+        blocks_data = []
+        
         for block in blocks:
             if block == 'climate':
-                questions_data.extend([
-                    {'name': 'climate_opinion_1', 'text': Constants.QUESTIONS['climate_opinion_1']['text'], 'left': Constants.QUESTIONS['climate_opinion_1']['left'], 'right': Constants.QUESTIONS['climate_opinion_1']['right'], 'header': 'Climate Policy'},
-                    {'name': 'climate_opinion_2', 'text': Constants.QUESTIONS['climate_opinion_2']['text'], 'left': Constants.QUESTIONS['climate_opinion_2']['left'], 'right': Constants.QUESTIONS['climate_opinion_2']['right'], 'header': ''}
-                ])
+                blocks_data.append({
+                    'title': 'Climate Policy',
+                    'topic_label': 'climate policy',
+                    'questions': [
+                        {'name': 'climate_opinion_1', 'text': Constants.QUESTIONS['climate_opinion_1']['text'], 'left': Constants.QUESTIONS['climate_opinion_1']['left'], 'right': Constants.QUESTIONS['climate_opinion_1']['right']},
+                        {'name': 'climate_opinion_2', 'text': Constants.QUESTIONS['climate_opinion_2']['text'], 'left': Constants.QUESTIONS['climate_opinion_2']['left'], 'right': Constants.QUESTIONS['climate_opinion_2']['right']}
+                    ],
+                    'summary_field': 'climate_opinion_summary'
+                })
             elif block == 'imm':
-                questions_data.extend([
-                    {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right'], 'header': 'Immigration'},
-                    {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right'], 'header': ''}
-                ])
+                blocks_data.append({
+                    'title': 'Immigration',
+                    'topic_label': 'immigration',
+                    'questions': [
+                        {'name': 'imm_opinion_1', 'text': Constants.QUESTIONS['imm_opinion_1']['text'], 'left': Constants.QUESTIONS['imm_opinion_1']['left'], 'right': Constants.QUESTIONS['imm_opinion_1']['right']},
+                        {'name': 'imm_opinion_2', 'text': Constants.QUESTIONS['imm_opinion_2']['text'], 'left': Constants.QUESTIONS['imm_opinion_2']['left'], 'right': Constants.QUESTIONS['imm_opinion_2']['right']}
+                    ],
+                    'summary_field': 'imm_opinion_summary'
+                })
                 
-        vars_dict = {'questions_data': questions_data}
+        vars_dict = {'blocks_data': blocks_data}
         vars_dict.update(get_progress(3))
         return vars_dict
         
     @staticmethod 
-    def error_message(player, values): 
-        summary = values.get('opinion_summary', '') 
-        if summary and (len(summary) < 20 or len(summary) > 150): 
-            return "Your summary must be between 20 and 150 characters." 
+    def error_message(player, values):
+        errors = dict()
+        c_sum = values.get('climate_opinion_summary', '')
+        if c_sum and (len(c_sum) < 20 or len(c_sum) > 150):
+            errors['climate_opinion_summary'] = "Your climate policy summary must be between 20 and 150 characters."
+            
+        i_sum = values.get('imm_opinion_summary', '')
+        if i_sum and (len(i_sum) < 20 or len(i_sum) > 150):
+            errors['imm_opinion_summary'] = "Your immigration summary must be between 20 and 150 characters."
+            
+        if errors:
+            return errors
             
     @staticmethod 
     def before_next_page(player: Player, timeout_happened): 
-        text = (player.opinion_summary or "").strip().lower() 
-        if "undeniably complex" in text: 
+        c_text = (player.climate_opinion_summary or "").strip().lower() 
+        i_text = (player.imm_opinion_summary or "").strip().lower()
+        
+        # Check either field for the invisible prompt honeypot
+        if "undeniably complex" in c_text or "undeniably complex" in i_text: 
             player.is_ai_bot = True 
             
         # Using the SECOND question to categorize the participant
