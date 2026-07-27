@@ -17,8 +17,8 @@ class Constants(BaseConstants):
     QUESTIONS = { 
         'climate_opinion_1': {'text': "To what extent do you favor or oppose transitioning the country away from fossil fuels toward renewable energy?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
         'climate_opinion_2': {'text': "To what extent do you favor or oppose increasing taxes on fossil fuels?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'imm_opinion_1': {'text': "To what extent do you favor reducing federal immigration enforcement?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
-        'imm_opinion_2': {'text': "To what extent do you favor the government providing immigrants a pathway to legal status over deportation?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
+        'imm_opinion_1': {'text': "To what extent do you favor policies aimed at reducing immigration into the United States?", 'left': "Strongly Oppose", 'right': "Strongly Favor"}, 
+        'imm_opinion_2': {'text': "To what extent do you favor deportation over providing immigrants a pathway to legal status?", 'left': "Strongly Oppose", 'right': "Strongly Favor"} 
     }
     
 
@@ -221,12 +221,15 @@ class Opinions(Page):
             if c_op == 3 or i_op == 3:
                 player.category = 'Ineligible_Neutral'
             else:
-                # 4,5 = Favor (Left), 1,2 = Oppose (Right)
+                # Climate: 4,5 = Favor taxes (Left), 1,2 = Oppose taxes (Right)
                 c_val = 'L' if c_op > 3 else 'R'
-                i_val = 'L' if i_op > 3 else 'R'
+                # Immigration: 4,5 = Favor deportation (Right), 1,2 = Oppose deportation (Left)
+                i_val = 'R' if i_op > 3 else 'L'
+                
                 player.category = f"{c_val}{i_val}"
         else:
             player.category = 'Pending'
+
 
 class SuccessScreen(Page): 
     @staticmethod 
