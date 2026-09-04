@@ -6,7 +6,7 @@ import statistics
 
 doc = """ 
 Phase 1: Recruitment, Demographics, and Dual-Topic Opinions. 
-Categorizes participants into LL, LR, RL, RR based on baseline responses (using Q2 as the categorizer).
+Categorizes participants into LL, LR, RL, RR, LC, RC, CL, CR, CC based on baseline responses (using Q2 as the categorizer).
 """ 
 
 class Constants(BaseConstants): 
@@ -44,7 +44,8 @@ def vars_for_admin_report(subsession: Subsession):
         'total_bots': sum([1 for p in consented_players if (p.field_maybe_none('is_ai_bot') == True or p.field_maybe_none('is_honeypot_bot') == True)]), 
     } 
 
-    categories_count = {'LL': 0, 'LR': 0, 'RL': 0, 'RR': 0, 'Ineligible_Neutral': 0, 'Pending': 0}
+    # Updated to track the C (Center) categories instead of Ineligible_Neutral
+    categories_count = {'LL': 0, 'LR': 0, 'RL': 0, 'RR': 0, 'LC': 0, 'RC': 0, 'CL': 0, 'CR': 0, 'CC': 0, 'Pending': 0}
 
     for p in consented_players: 
         cat = p.field_maybe_none('category') 
@@ -218,15 +219,23 @@ class Opinions(Page):
         i_op = player.imm_opinion_2
         
         if c_op is not None and i_op is not None:
-            if c_op == 3 or i_op == 3:
-                player.category = 'Ineligible_Neutral'
+            # Climate: 4,5 = Favor taxes (Left), 1,2 = Oppose taxes (Right), 3 = Center (C)
+            if c_op > 3:
+                c_val = 'L'
+            elif c_op < 3:
+                c_val = 'R'
             else:
-                # Climate: 4,5 = Favor taxes (Left), 1,2 = Oppose taxes (Right)
-                c_val = 'L' if c_op > 3 else 'R'
-                # Immigration: 4,5 = Favor deportation (Right), 1,2 = Oppose deportation (Left)
-                i_val = 'R' if i_op > 3 else 'L'
+                c_val = 'C'
                 
-                player.category = f"{c_val}{i_val}"
+            # Immigration: 4,5 = Favor deportation (Right), 1,2 = Oppose deportation (Left), 3 = Center (C)
+            if i_op > 3:
+                i_val = 'R'
+            elif i_op < 3:
+                i_val = 'L'
+            else:
+                i_val = 'C'
+                
+            player.category = f"{c_val}{i_val}"
         else:
             player.category = 'Pending'
 
